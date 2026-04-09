@@ -7,13 +7,13 @@ class Database:
         self._create_database()
 
     def _create_database(self):
-        self.cur.execute("""CREATE TABLE IF NOT EXISTS sessions(
-                         session_id INTEGER PRIMARY KEY AUTOINCREMENT
-                         activity TEXT NOT NULL
-                         duration_minutes INT NOT NULL
-                         session_date TEXT NOT NULL
+        self.cur.execute("""CREATE TABLE IF NOT EXISTS sessions (
+                         session_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                         activity TEXT NOT NULL,
+                         duration_minutes INT NOT NULL,
+                         session_date TEXT NOT NULL,
                          notes TEXT
-                         )""")
+                         ) """)
         self.conn.commit()
 
 

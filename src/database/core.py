@@ -13,7 +13,7 @@ class Database:
                          duration_minutes INT NOT NULL,
                          session_date TEXT NOT NULL,
                          notes TEXT
-                         ) """)
+                         """)
         self.conn.commit()
 
 

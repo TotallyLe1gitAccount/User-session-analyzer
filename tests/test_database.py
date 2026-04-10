@@ -18,6 +18,16 @@ class TestDB(unittest.TestCase):
 
         self.assertIsNotNone(result, "Таблица не создана.")
         
+    def test_add_session(self):
+        db = Database(":memory:")
+
+        db.add_session("Gym", 60, "04-10-2026", "Leg day")
+
+        db.cur.execute("""SELECT * FROM sessions""")
+        result = db.cur.fetchone()
+
+        self.assertIsNotNone(result, "Пустые данные")
+        
 
 if __name__ == "__main__":
     unittest.main(exit=False)

@@ -16,5 +16,10 @@ class Database:
                          """)
         self.conn.commit()
 
+    def add_session(self, activity, duration, date, notes=""):
+        self.cur.execute("""INSERT INTO sessions (activity, duration_minutes, session_date, notes)
+                         VALUES (? ? ? ?)""", (activity, duration, date, notes))
+        
+        self.conn.commit()
 
 

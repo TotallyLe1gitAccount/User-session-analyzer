@@ -28,3 +28,37 @@ class Database:
                             WHERE session_id = ?;""", (session_id,))
 
         self.conn.commit()
+
+    def edit_session(self, session_id, activity=None, duration=None, date=None, notes=None):
+            fields = []
+            values = []
+
+            if activity is not None:
+                fields.append("activity = ?")
+                values.append(activity)
+
+            if duration is not None:
+                fields.append("duration_minutes = ?")
+                values.append(duration)
+
+            if date is not None:
+                fields.append("session_date = ?")
+                values.append(date)
+
+            if notes is not None:
+                fields.append("notes = ?")
+                values.append(notes)
+
+            if not fields:
+                return False
+
+            values.append(session_id)
+
+            query = f"""
+                UPDATE sessions
+                SET {", ".join(fields)}
+                WHERE session_id = ?
+            """
+
+            self.cur.execute(query, tuple(values))
+            self.conn.commit()

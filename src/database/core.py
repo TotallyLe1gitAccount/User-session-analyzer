@@ -20,4 +20,11 @@ class Database:
         self.cur.execute("""INSERT INTO sessions (activity, duration_minutes, session_date, notes)
                          VALUES (?, ?, ?, ?)""", (activity, duration, date, notes))
         
+
+        self.conn.commit()
+
+    def delete_session(self, session_id):
+        self.cur.execute("""DELETE FROM sessions
+                            WHERE session_id = ?;""", (session_id,))
+
         self.conn.commit()

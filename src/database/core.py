@@ -28,7 +28,7 @@ class Database:
         
         self.conn.commit()
 
-    def edit_session(self, session_id, activity=None, duration=None, date=None, notes=None)
+    def edit_session(self, session_id, activity=None, duration=None, date=None, notes=None):
             fields = []
             values = []
 

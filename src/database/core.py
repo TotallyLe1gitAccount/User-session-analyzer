@@ -17,19 +17,36 @@ class Database:
                          )""")
         self.conn.commit()
 
-    def add_session(self, activity, duration, date, notes=""):
-        self.cur.execute("""INSERT INTO sessions (activity, duration_minutes, session_date, notes)
-                         VALUES (?, ?, ?, ?)""", (activity, duration, date, notes))
+    def add_session(self, activity : str, duration : int, date : str, notes : str=""):
+        try:
+            self.cur.execute("""INSERT INTO sessions (activity, duration_minutes, session_date, notes)
+                            VALUES (?, ?, ?, ?)""", (activity, duration, date, notes))
+            
+            self.conn.commit()
+            return self.cur.lastrowid
         
-        self.conn.commit()
+        except sqlite3.Error as e:
+            print(f"DB error: {e}")
+            return None
 
-    def delete_session(self, session_id):
-        self.cur.execute("""DELETE FROM sessions
-                            WHERE session_id = ?;""", (session_id,))
+    def delete_session(self, session_id : int):
+        try:
+            self.cur.execute("""DELETE FROM sessions
+                                WHERE session_id = ?;""", (session_id,))
+            
+            self.conn.commit()
+            return self.cur.rowcount > 0
         
-        self.conn.commit()
+        except sqlite3.Error as e:
+            print(f"DB error: {e}")
+            return False
 
-    def edit_session(self, session_id, activity=None, duration=None, date=None, notes=None):
+
+    def edit_session(self, session_id : int=None, activity: str=None, duration: int=None, date: str=None, notes :str=None):
+        try:
+            if session_id is None:
+                return False
+            
             fields = []
             values = []
 
@@ -53,7 +70,7 @@ class Database:
                 return False
 
             values.append(session_id)
-
+        
             query = f"""
                 UPDATE sessions
                 SET {", ".join(fields)}
@@ -62,6 +79,12 @@ class Database:
 
             self.cur.execute(query, tuple(values))
             self.conn.commit()
+            return self.cur.rowcount > 0
+        
+        except sqlite3.Error as e:
+            print(f"DB error: {e}")
+            return False
+
     
     def read_session(self, session_id=None):
 
@@ -74,4 +97,5 @@ class Database:
     
     def close(self):
         self.conn.close()
+
 

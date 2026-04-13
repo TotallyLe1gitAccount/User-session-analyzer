@@ -61,3 +61,13 @@ class Database:
 
             self.cur.execute(query, tuple(values))
             self.conn.commit()
+    
+    def read_session(self, session_id=None):
+
+        if session_id is not None:
+            res = self.cur.execute("SELECT * FROM sessions WHERE session_id = ?", (session_id,))
+        else:
+            res = self.cur.execute("SELECT * FROM sessions")
+          
+        return [dict(row) for row in res.fetchall()]
+    

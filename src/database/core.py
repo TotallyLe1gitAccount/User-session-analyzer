@@ -3,6 +3,7 @@ import sqlite3
 class Database:
     def __init__(self, path):
         self.conn = sqlite3.connect(path)
+        self.conn.row_factory = sqlite3.Row
         self.cur = self.conn.cursor()
         self._create_database()
 

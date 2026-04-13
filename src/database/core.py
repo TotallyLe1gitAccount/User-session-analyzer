@@ -71,3 +71,6 @@ class Database:
           
         return [dict(row) for row in res.fetchall()]
     
+    def close(self):
+        self.conn.close()
+

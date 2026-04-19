@@ -58,6 +58,21 @@ class TestDB(unittest.TestCase):
         "04-10-2026 12:00",
         "Atomic habits"
         )
+    def test_read_session(self):
+
+        db = Database(":memory:")
+
+        db.add_session("Gym", 60, "04-10-2026", "Leg day")
+
+        result = db.read_session()
+        
+        assert result == [{
+        "session_id": 1,
+        "activity": "Gym",
+        "duration_minutes": 60,
+        "session_date": "04-10-2026",
+        "notes": "Leg day"
+        }]
 
 if __name__ == "__main__":
     unittest.main(exit=False)

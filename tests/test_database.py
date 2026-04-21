@@ -39,11 +39,13 @@ class TestDB(unittest.TestCase):
 
         self.assertIsNone(result, "Пустые данные")
 
-    def test_edit_session(self):
+    def test_delete_nonexistent(self):
+        
         db = Database(":memory:")
-
-        db.add_session("Gym", 60, "04-10-2026", "Leg day")
-        db.edit_session(1, activity="Read a book", 
+        db.delete_session(999)
+        db.cur.execute("SELECT COUNT(*) FROM sessions")
+        count = db.cur.fetchone()[0]
+        self.assertEqual(count, 0)
                         duration=60, 
                         date="04-10-2026 12:00", 
                         notes="Atomic habits")

@@ -95,6 +95,18 @@ class TestDB(unittest.TestCase):
 
         self.assertIsNotNone(result, "session_id not found")
         
+    def test_read_session_returns_dict(self):
+
+        self.db.add_session("Breakfast", 30, "04-21-2026", "Eggs and cottage cheese")
+
+        result = self.db.read_session()
+
+        self.assertIsInstance(result, list)
+        self.assertGreater(len(result), 0)
+
+        session = result[0]
+
+        self.assertIsInstance(session, dict)
 
 if __name__ == "__main__":
     unittest.main(exit=False)

@@ -52,6 +52,18 @@ class Database:
 
 
     def edit_session(self, session_id : int=None, activity: str=None, duration: int=None, date: str=None, notes :str=None):
+
+        if not isinstance(session_id, int):
+            raise TypeError("session_id must be int")
+        if not isinstance(activity, str):
+            raise TypeError("activity must be str")
+        if not isinstance(duration, int):
+            raise TypeError("duration must be int")
+        if not isinstance(date, str):
+            raise TypeError("date must be str")
+        if not isinstance(notes, str):
+            raise TypeError("notes must be str")
+        
         try:
             if session_id is None:
                 return False

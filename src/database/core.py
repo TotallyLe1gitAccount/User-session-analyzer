@@ -34,9 +34,7 @@ class Database:
         self.conn.commit()
         return self.cur.lastrowid
         
-        except sqlite3.Error as e:
-            print(f"DB error: {e}")
-            return None
+
 
     def delete_session(self, session_id : int):
 

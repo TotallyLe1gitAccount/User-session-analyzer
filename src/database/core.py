@@ -39,6 +39,10 @@ class Database:
             return None
 
     def delete_session(self, session_id : int):
+
+        if not isinstance(session_id, int):
+            raise TypeError
+        
         try:
             self.cur.execute("""DELETE FROM sessions
                                 WHERE session_id = ?;""", (session_id,))

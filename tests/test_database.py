@@ -86,6 +86,15 @@ class TestDB(unittest.TestCase):
         self.assertEqual(result[0]["session_date"], "04-10-2026")
         self.assertEqual(result[0]["notes"], "Leg day")
 
+    def test_add_session_returns_id(self):
+        
+        self.db.add_session("Breakfast", 30, "04-21-2026", "Eggs and cottage cheese")
+
+        self.db.cur.execute("SELECT session_id FROM sessions")
+        result = self.db.cur.fetchone()[0]
+
+        self.assertIsNotNone(result, "session_id not found")
+        
 
 if __name__ == "__main__":
     unittest.main(exit=False)

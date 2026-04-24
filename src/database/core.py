@@ -18,12 +18,21 @@ class Database:
         self.conn.commit()
 
     def add_session(self, activity : str, duration : int, date : str, notes : str=""):
-        try:
-            self.cur.execute("""INSERT INTO sessions (activity, duration_minutes, session_date, notes)
+
+        if not isinstance(activity, str):
+            raise TypeError("activity must be str")
+        if not isinstance(duration, int):
+            raise TypeError("duration must be int")
+        if not isinstance(date, str):
+            raise TypeError("date must be str")
+        if not isinstance(notes, str):
+            raise TypeError("notes must be str")
+        
+        self.cur.execute("""INSERT INTO sessions (activity, duration_minutes, session_date, notes)
                             VALUES (?, ?, ?, ?)""", (activity, duration, date, notes))
             
-            self.conn.commit()
-            return self.cur.lastrowid
+        self.conn.commit()
+        return self.cur.lastrowid
         
         except sqlite3.Error as e:
             print(f"DB error: {e}")

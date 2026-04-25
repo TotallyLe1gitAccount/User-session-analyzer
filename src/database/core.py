@@ -25,8 +25,11 @@ class Database:
             raise TypeError("duration must be int")
         if not isinstance(date, str):
             raise TypeError("date must be str")
-        if not isinstance(notes, str):
-            raise TypeError("notes must be str")
+        
+        if notes is not None:
+            if not isinstance(notes, str):
+                raise TypeError("notes must be str")
+
         
         self.cur.execute("""INSERT INTO sessions (activity, duration_minutes, session_date, notes)
                             VALUES (?, ?, ?, ?)""", (activity, duration, date, notes))
@@ -40,83 +43,89 @@ class Database:
     def delete_session(self, session_id : int):
 
         if not isinstance(session_id, int):
-            raise TypeError
+            raise TypeError("session_id must be int")
         
         try:
             self.cur.execute("""DELETE FROM sessions
                                 WHERE session_id = ?;""", (session_id,))
             
             self.conn.commit()
-            return self.cur.rowcount > 0
         
         except sqlite3.Error as e:
-            print(f"DB error: {e}")
-            return False
+            raise RuntimeError(f"Database error {e}") from e
         
+        return self.cur.rowcount
+
+
     def edit_session(self, session_id : int=None, activity: str=None, duration: int=None, date: str=None, notes :str=None):
+        
+        if session_id is None:
+            raise ValueError("session_id must be not empty")
+        
 
         if not isinstance(session_id, int):
             raise TypeError("session_id must be int")
-        if not isinstance(activity, str):
-            raise TypeError("activity must be str")
-        if not isinstance(duration, int):
-            raise TypeError("duration must be int")
-        if not isinstance(date, str):
-            raise TypeError("date must be str")
-        if not isinstance(notes, str):
-            raise TypeError("notes must be str")
         
-        try:
-            if session_id is None:
-                return False
-            
-            fields = []
-            values = []
+        fields = []
+        values = []
 
-            if activity is not None:
-                fields.append("activity = ?")
-                values.append(activity)
+        if activity is not None:
+            if not isinstance(activity, str):
+                raise TypeError("activity must be str")
+            fields.append("activity = ?")
+            values.append(activity)
 
-            if duration is not None:
-                fields.append("duration_minutes = ?")
-                values.append(duration)
+        if duration is not None:
+            if not isinstance(duration, int):
+                raise TypeError("duration must be int")
+            fields.append("duration_minutes = ?")
+            values.append(duration)
 
-            if date is not None:
-                fields.append("session_date = ?")
-                values.append(date)
+        if date is not None:
+            if not isinstance(date, str):
+                raise TypeError("date must be str")
+            fields.append("session_date = ?")
+            values.append(date)
 
-            if notes is not None:
-                fields.append("notes = ?")
-                values.append(notes)
+        if notes is not None:
+            if not isinstance(notes, str):
+                raise TypeError("notes must be str")
+            fields.append("notes = ?")
+            values.append(notes)
 
-            if not fields:
-                return False
+        if not fields:
+            raise ValueError("no fields to update")
 
-            values.append(session_id)
+        values.append(session_id)
+    
+        query = f"""
+            UPDATE sessions
+            SET {", ".join(fields)}
+            WHERE session_id = ?
+        """
+
+        self.cur.execute(query, tuple(values))
+        self.conn.commit()
+        return self.cur.rowcount
         
-            query = f"""
-                UPDATE sessions
-                SET {", ".join(fields)}
-                WHERE session_id = ?
-            """
+    
+    def get_session(self, session_id):
 
-            self.cur.execute(query, tuple(values))
-            self.conn.commit()
-
-            return self.cur.rowcount > 0
+        if not isinstance(session_id, int):
+            raise TypeError("session_id must be int")
         
-        except sqlite3.Error as e:
-            print(f"DB error: {e}")
-            return False
+        res = self.cur.execute("SELECT * FROM sessions WHERE session_id = ?", (session_id,))
+        row = res.fetchone()
+        
+        return dict(row) if row else None
+    
+    def get_all_sessions(self):
 
-    def read_session(self, session_id=None):
+        res = self.cur.execute("SELECT * FROM sessions")
+        rows = [dict(row) for row in res.fetchall()]
 
-        if session_id is not None:
-            res = self.cur.execute("SELECT * FROM sessions WHERE session_id = ?", (session_id,))
-        else:
-            res = self.cur.execute("SELECT * FROM sessions")
-          
-        return [dict(row) for row in res.fetchall()]
+        return rows
+
     
     def close(self):
         self.conn.close()

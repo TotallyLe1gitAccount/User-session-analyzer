@@ -108,14 +108,24 @@ class Database:
         return self.cur.rowcount
         
     
-    def read_session(self, session_id=None):
+    def get_session(self, session_id):
 
-        if session_id is not None:
-            res = self.cur.execute("SELECT * FROM sessions WHERE session_id = ?", (session_id,))
-        else:
-            res = self.cur.execute("SELECT * FROM sessions")
-          
-        return [dict(row) for row in res.fetchall()]
+        if not isinstance(session_id, int):
+            raise TypeError("session_id must be int")
+        
+        res = self.cur.execute("SELECT * FROM sessions WHERE session_id = ?", (session_id,))
+        row = res.fetchone()
+        
+        return dict(row) if row else None
+    
+    def get_all_sessions(self):
+
+        res = self.cur.execute("SELECT * FROM sessions")
+        rows = [dict(row) for row in res.fetchall()]
+
+        return rows
+
+
     
     def close(self):
         self.conn.close()

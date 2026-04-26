@@ -34,6 +34,7 @@ class Database:
         self.cur.execute("""INSERT INTO sessions (activity, duration_minutes, session_date, notes)
                             VALUES (?, ?, ?, ?)""", (activity, duration, date, notes))
             
+
         self.conn.commit()
         return self.cur.lastrowid
         
@@ -125,9 +126,7 @@ class Database:
 
         return rows
 
-
     
     def close(self):
         self.conn.close()
-
 

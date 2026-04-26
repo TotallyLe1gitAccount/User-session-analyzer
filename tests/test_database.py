@@ -22,84 +22,127 @@ class TestDB(unittest.TestCase):
         
     def test_add_session(self):
 
-        self.db.add_session("Gym", 60, "04-10-2026", "Leg day")
+        id = self.db.add_session("Foo", 900, "01-01-1000", "Bar")
+    
+        result_read = self.db.get_session(id)
 
-        self.db.cur.execute("""SELECT * FROM sessions""")
-        result = self.db.cur.fetchone()
+        self.assertEqual(result_read["activity"], "Foo")
+        self.assertEqual(result_read["duration_minutes"], 900)
+        self.assertEqual(result_read["session_date"], "01-01-1000")
+        self.assertEqual(result_read["notes"], "Bar")
+        
+       
+    def test_add_row_instances(self):
 
-        self.assertEqual(result[1], "Gym")
-        self.assertEqual(result[2], 60)
-        self.assertEqual(result[3], "04-10-2026")
-        self.assertEqual(result[4], "Leg day")
+        result_add = self.db.add_session("Foo", 900, "01-01-1000", "Bar")
+        self.assertIsInstance(result_add, int)
+        
+
+    def test_add_row_invalid_instances(self):
+
+        with self.assertRaises(TypeError):
+            self.db.add_session(900, "Foo", [], {})
+
 
     def test_delete_session(self):
         
-        self.db.add_session("Gym", 60, "04-10-2026", "Leg day")
+        result_add = self.db.add_session("Foo", 900, "01-01-1000", "Bar")
 
-        self.db.cur.execute("SELECT session_id FROM sessions")
-        session_id = self.db.cur.fetchone()[0]
+        result_delete = self.db.delete_session(result_add)
 
-        self.db.delete_session(session_id)
+        self.assertTrue(result_delete)
 
-        self.db.cur.execute("""SELECT * FROM sessions""")
-        result = self.db.cur.fetchone()
+        result_read = self.db.get_all_sessions()
 
-        self.assertIsNone(result, "Пустые данные")
+        self.assertEqual(result_read, [])
 
+        
     def test_delete_nonexistent(self):
-        self.db.delete_session(999)
-        self.db.cur.execute("SELECT COUNT(*) FROM sessions")
-        count = self.db.cur.fetchone()[0]
-        self.assertEqual(count, 0)
+
+        self.db.add_session("Foo", 900, "01-01-1000", "Bar")
+
+        result_delete = self.db.delete_session(999)
+        
+        self.assertFalse(result_delete)
+
+        result_read = self.db.get_all_sessions()
+
+        self.assertEqual(result_read[0]["activity"], "Foo")
+        self.assertEqual(result_read[0]["duration_minutes"], 900)
+        self.assertEqual(result_read[0]["session_date"], "01-01-1000")
+        self.assertEqual(result_read[0]["notes"], "Bar")
+
 
     def test_edit_full_session(self):
    
-        self.db.add_session("Gym", 60, "04-10-2026", "Leg day")
+        result_add = self.db.add_session("Foo", 900, "01-01-1000", "Bar")
 
-        
-        self.db.cur.execute("SELECT session_id FROM sessions")
-        session_id = self.db.cur.fetchone()[0]
-
-        self.db.edit_session(session_id, activity="Read a book", 
-                        duration=60, 
+        result_edit = self.db.edit_session(result_add, activity="FooBar", 
+                        duration=901, 
                         date="04-10-2026 12:00", 
-                        notes="Atomic habits")
+                        notes="BarFoo")
+
+        self.assertEqual(result_edit, 1)
+
+        result_read = self.db.get_session(result_add)
+
+        self.assertEqual(result_read["activity"], "FooBar")
+        self.assertEqual(result_read["duration_minutes"], 901)
+        self.assertEqual(result_read["session_date"], "04-10-2026 12:00")
+        self.assertEqual(result_read["notes"], "BarFoo")
+
+    
+    def test_edit_nonexistent(self):
+        
+        result_add = self.db.add_session("Foo", 900, "01-01-1000", "Bar")
+
+        result_edit = self.db.edit_session(result_add + 1, activity="Foo", duration=905, date="01-01-1000", notes="")
 
 
-        self.db.cur.execute("""SELECT * FROM sessions WHERE session_id = (?)""", (session_id,))
-        result = self.db.cur.fetchone()
+        self.assertEqual(result_edit, 0)
 
-        self.assertEqual(result[0], session_id)
-        self.assertEqual(result[1], "Read a book")
-        self.assertEqual(result[2], 60)
-        self.assertEqual(result[3], "04-10-2026 12:00")
-        self.assertEqual(result[4], "Atomic habits")
 
-    def test_read_session(self):
+    def test_edit_single_input(self):
+            
+            result_add = self.db.add_session("Foo", 900, "01-01-1000", "Bar")
 
-        self.db.add_session("Gym", 60, "04-10-2026", "Leg day")
+            result_edit = self.db.edit_session(result_add, activity="FooBar")
 
-        result = self.db.read_session()
+            self.assertEqual(result_edit, 1)
 
-        self.assertEqual(result[0]["activity"], "Gym")
-        self.assertEqual(result[0]["duration_minutes"], 60)
-        self.assertEqual(result[0]["session_date"], "04-10-2026")
-        self.assertEqual(result[0]["notes"], "Leg day")
+            result_read = self.db.get_session(result_add)
+            
 
+            self.assertEqual(result_read["activity"], "FooBar")
+            self.assertEqual(result_read["duration_minutes"], 900)
+            self.assertEqual(result_read["session_date"], "01-01-1000")
+            self.assertEqual(result_read["notes"], "Bar")
+
+
+    def test_edit_session_invalid_instance(self):
+
+        self.db.add_session("Foo", 900, "01-01-1000", "Bar")
+
+        with self.assertRaises(TypeError):
+            self.db.edit_session('f', activity=9, 
+                duration='901', 
+                date="04-10-2026 12:00", 
+                notes=112)
+
+ 
     def test_add_session_returns_id(self):
-        
-        self.db.add_session("Breakfast", 30, "04-21-2026", "Eggs and cottage cheese")
 
-        self.db.cur.execute("SELECT session_id FROM sessions")
-        result = self.db.cur.fetchone()[0]
+        id = self.db.add_session("Foo", 900, "01-01-1000", "Bar")
 
-        self.assertIsNotNone(result, "session_id not found")
-        
-    def test_read_session_returns_dict(self):
+        self.assertIsNotNone(id)
+        self.assertIsInstance(id, int)
 
-        self.db.add_session("Breakfast", 30, "04-21-2026", "Eggs and cottage cheese")
 
-        result = self.db.read_session()
+    def test_get_all_session_returns_valid_structures(self):
+
+        self.db.add_session("Foo", 900, "01-01-1000", "Bar")
+
+        result = self.db.get_all_sessions()
 
         self.assertIsInstance(result, list)
         self.assertGreater(len(result), 0)
@@ -107,6 +150,16 @@ class TestDB(unittest.TestCase):
         session = result[0]
 
         self.assertIsInstance(session, dict)
+
+
+    def test_get_session_not_found(self):
+
+        self.db.add_session("Foo", 900, "01-01-1000", "Bar")
+
+        read_session = self.db.get_session(999)
+
+        self.assertEqual(read_session, None)
+    
 
 if __name__ == "__main__":
     unittest.main(exit=False)
